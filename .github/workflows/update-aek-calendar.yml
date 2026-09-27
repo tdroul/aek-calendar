@@ -2,9 +2,7 @@ name: Update AEK Calendar
 
 on:
   workflow_dispatch:
-
   schedule:
-    # Τρέχει την 1η και 15η κάθε μήνα
     - cron: "15 6 1,15 * *"
 
 permissions:
@@ -18,29 +16,25 @@ jobs:
   update:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-
-      - name: Update calendar from official AEK FC
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4
+      - name: Update calendar from multiple sources
         run: python update_calendar.py
-
       - name: Commit only when calendar changed
         run: |
           if git diff --quiet -- AEK_2026_27_iPhone_Calendar.ics; then
             echo "No calendar changes."
             exit 0
           fi
-
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
           git add AEK_2026_27_iPhone_Calendar.ics
           git commit -m "Update AEK calendar"
           git push
